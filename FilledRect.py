@@ -54,7 +54,7 @@ class FilledRect(RectShape):
 		else:
 			self.connect(rect)
 
-	def render_method(self, painter: QPainter):
+	def prepare_fill(self, painter: QPainter):
 		brush = QBrush()
 
 		brush.setColor(self.bg_color)

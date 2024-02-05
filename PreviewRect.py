@@ -23,7 +23,7 @@ class PreviewRect(RectShape):
 			is_rect_colliding_with_rects(self, SceneManager.rects)
 		)
 
-	def render_method(self, painter: QPainter):
+	def prepare_fill(self, painter: QPainter):
 		pen = QPen()
 
 		has_collision = self.has_collision()

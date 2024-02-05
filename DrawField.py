@@ -5,17 +5,23 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from main import Window
 
-from Utils.Geometry import is_point_in_rect, is_rect_colliding_with_rects, get_coords_for_rect_center, is_rect_in_screen
+from enum import Enum
 
 from PyQt6.QtGui import QMouseEvent, QPixmap, QKeyEvent
 from PyQt6.QtWidgets import QLabel
-
 from PyQt6.QtCore import QPoint, Qt
 
+from Utils.Geometry import is_point_in_rect, is_rect_colliding_with_rects, get_coords_for_rect_center, is_rect_in_screen
 from RectShape import RectShape
 from PreviewRect import PreviewRect
 from FilledRect import FilledRect
 from SceneManager import SceneManager
+
+
+class AppMode(Enum):
+	TOGGLE_CONNECTION = 0
+	CREATE_RECT = 1
+	MOVE_RECT = 2
 
 
 class DrawField(QLabel):
@@ -32,9 +38,7 @@ class DrawField(QLabel):
 
 		self.diff = QPoint(0, 0)
 
-		self.is_connection_toggle_mode = False
-		self.is_rect_create_mode = True
-		self.is_rect_move_mode = False
+		self.mode: AppMode = AppMode.CREATE_RECT
 
 		PreviewRect(self, QPoint(-RectShape.width, -RectShape.height), self.size())
 
@@ -50,7 +54,7 @@ class DrawField(QLabel):
 		for connection in SceneManager.connections:
 			connection.draw()
 
-		if self.is_rect_create_mode:
+		if self.mode == AppMode.CREATE_RECT:
 			SceneManager.previewRect.draw()
 
 	def rerender(self):
@@ -61,7 +65,7 @@ class DrawField(QLabel):
 		SceneManager.selectedRect = rect
 		rect.is_selected = True
 
-	def deselect_selected_rect(self):
+	def remove_selection(self):
 		if SceneManager.selectedRect is None:
 			return
 
@@ -69,26 +73,23 @@ class DrawField(QLabel):
 		SceneManager.selectedRect = None
 
 	def mousePressEvent(self, event: QMouseEvent):
-
 		for rect in SceneManager.rects:
 			if not is_point_in_rect(rect, event.pos()):
-				self.is_rect_create_mode = not self.is_connection_toggle_mode
-				self.is_rect_move_mode = False
+				if self.mode != AppMode.TOGGLE_CONNECTION:
+					self.mode = AppMode.CREATE_RECT
 
 				continue
 
-			self.is_rect_create_mode = False
-			self.is_rect_move_mode = not self.is_connection_toggle_mode
-
-			if self.is_connection_toggle_mode:
+			if self.mode == AppMode.TOGGLE_CONNECTION:
 				if rect is SceneManager.selectedRect:
-					self.deselect_selected_rect()
+					self.remove_selection()
 				elif SceneManager.selectedRect is None:
 					self.select_rect(rect)
 				else:
 					SceneManager.selectedRect.toggle_connection(rect)
 			else:
-				self.deselect_selected_rect()
+				self.mode = AppMode.MOVE_RECT
+				self.remove_selection()
 				self.select_rect(rect)
 
 				self.diff.setX(event.pos().x() - rect.pos.x())
@@ -99,16 +100,13 @@ class DrawField(QLabel):
 		self.rerender()
 
 	def mouseReleaseEvent(self, event: QMouseEvent):
-
-		self.is_rect_move_mode = False
-
-		if self.is_connection_toggle_mode is True:
+		if self.mode == AppMode.TOGGLE_CONNECTION:
 			self.rerender()
 			return
 
-		self.is_rect_create_mode = True
+		self.mode = AppMode.CREATE_RECT
 
-		self.deselect_selected_rect()
+		self.remove_selection()
 
 		self.diff.setX(0)
 		self.diff.setY(0)
@@ -118,7 +116,6 @@ class DrawField(QLabel):
 		self.rerender()
 
 	def mouseMoveEvent(self, event: QMouseEvent):
-
 		self.parent_window.update_coords_labels(event.pos())
 
 		SceneManager.previewRect.move(get_coords_for_rect_center(event.pos()))
@@ -127,7 +124,7 @@ class DrawField(QLabel):
 			self.rerender()
 			return
 
-		if self.is_connection_toggle_mode is True:
+		if self.mode == AppMode.TOGGLE_CONNECTION:
 			self.rerender()
 			return
 
@@ -152,10 +149,9 @@ class DrawField(QLabel):
 		self.rerender()
 
 	def mouseDoubleClickEvent(self, event: QMouseEvent):
-
 		if (
-			SceneManager.canCreateNewRect is False or
-			self.is_rect_create_mode is False
+			not SceneManager.canCreateNewRect or
+			self.mode != AppMode.CREATE_RECT
 		):
 			return
 
@@ -167,26 +163,19 @@ class DrawField(QLabel):
 		self.rerender()
 
 	def keyPressEvent(self, event: QKeyEvent):
-
 		if event.key() != Qt.Key.Key_Control:
 			return
 
-		if self.is_rect_move_mode is False:
-			self.is_connection_toggle_mode = True
-
-		self.is_rect_create_mode = False
+		if self.mode != AppMode.MOVE_RECT:
+			self.mode = AppMode.TOGGLE_CONNECTION
 
 		self.rerender()
 
 	def keyReleaseEvent(self, event: QKeyEvent):
-
 		if event.key() != Qt.Key.Key_Control:
 			return
 
-		self.is_connection_toggle_mode = False
-
-		if self.is_rect_move_mode is False:
-			self.is_rect_create_mode = True
-			self.deselect_selected_rect()
+		if self.mode == AppMode.TOGGLE_CONNECTION:
+			self.mode = AppMode.CREATE_RECT
 
 		self.rerender()

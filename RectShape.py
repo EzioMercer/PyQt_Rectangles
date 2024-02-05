@@ -17,7 +17,7 @@ class RectShape(ABC):
 		self.pos = new_pos
 
 	@abstractmethod
-	def render_method(self, painter: QPainter):
+	def prepare_fill(self, painter: QPainter):
 		return NotImplemented
 
 	def draw_text(self, painter: QPainter):
@@ -27,7 +27,7 @@ class RectShape(ABC):
 		canvas = self.draw_field.pixmap()
 		painter = QPainter(canvas)
 
-		self.render_method(painter)
+		self.prepare_fill(painter)
 
 		painter.drawRect(
 			self.pos.x(),
