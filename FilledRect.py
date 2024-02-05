@@ -22,25 +22,25 @@ class FilledRect(RectShape):
 		super().__init__(draw_field, pos)
 
 		SceneManager.rects.append(self)
-		self.id = FilledRect.id
+
+		self.__id = FilledRect.id
 		FilledRect.id += 1
 
 		self.is_selected = False
-		self.pos = pos
 		self.connections: Dict[FilledRect, Connection] = {}
 
-		self.bg_color = get_random_color()
-		self.text_color = get_text_color(self.bg_color)
+		self.__bg_color = get_random_color()
+		self.__text_color = get_text_color(self.__bg_color)
 
 		self.draw()
 
-	def connect(self, rect: FilledRect):
+	def __connect(self, rect: FilledRect):
 		connection = Connection(self.draw_field, self, rect)
 
 		self.connections[rect] = connection
 		rect.connections[self] = connection
 
-	def disconnect(self, rect: FilledRect):
+	def __disconnect(self, rect: FilledRect):
 		connection = self.connections[rect]
 
 		SceneManager.connections.remove(connection)
@@ -50,14 +50,14 @@ class FilledRect(RectShape):
 
 	def toggle_connection(self, rect: FilledRect):
 		if rect in self.connections:
-			self.disconnect(rect)
+			self.__disconnect(rect)
 		else:
-			self.connect(rect)
+			self.__connect(rect)
 
 	def prepare_fill(self, painter: QPainter):
 		brush = QBrush()
 
-		brush.setColor(self.bg_color)
+		brush.setColor(self.__bg_color)
 		brush.setStyle(Qt.BrushStyle.SolidPattern)
 		painter.setBrush(brush)
 
@@ -75,5 +75,5 @@ class FilledRect(RectShape):
 	def draw_text(self, painter: QPainter):
 		text_pos = QPoint(get_rect_center_coords(self.pos))
 
-		painter.setPen(self.text_color)
-		painter.drawText(text_pos, str(self.id))
+		painter.setPen(self.__text_color)
+		painter.drawText(text_pos, str(self.__id))

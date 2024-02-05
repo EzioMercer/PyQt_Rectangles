@@ -17,7 +17,7 @@ class PreviewRect(RectShape):
 
 		self.draw()
 
-	def has_collision(self) -> bool:
+	def __has_collision(self) -> bool:
 		return (
 			is_rect_in_screen(self, self.screen_size, 0) or
 			is_rect_colliding_with_rects(self, SceneManager.rects)
@@ -26,7 +26,7 @@ class PreviewRect(RectShape):
 	def prepare_fill(self, painter: QPainter):
 		pen = QPen()
 
-		has_collision = self.has_collision()
+		has_collision = self.__has_collision()
 
 		SceneManager.canCreateNewRect = not has_collision
 

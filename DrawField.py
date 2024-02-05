@@ -28,44 +28,44 @@ class DrawField(QLabel):
 	def __init__(self, parent_window: Window, canvas: QPixmap):
 		super().__init__()
 
-		self.parent_window = parent_window
+		self.__parent_window = parent_window
 		self.setFixedWidth(canvas.width())
 		self.setFixedHeight(canvas.height())
 
-		self.canvas = canvas
+		self.__canvas = canvas
 		self.setPixmap(canvas)
 		self.setMouseTracking(True)
 
-		self.diff = QPoint(0, 0)
+		self.__diff = QPoint(0, 0)
 
-		self.mode: AppMode = AppMode.CREATE_RECT
+		self.__mode: AppMode = AppMode.CREATE_RECT
 
 		PreviewRect(self, QPoint(-RectShape.width, -RectShape.height), self.size())
 
-		self.draw_all()
+		self.__draw_all()
 
-	def empty_screen(self):
-		self.setPixmap(self.canvas)
+	def __empty_screen(self):
+		self.setPixmap(self.__canvas)
 
-	def draw_all(self):
+	def __draw_all(self):
 		for rect in SceneManager.rects:
 			rect.draw()
 
 		for connection in SceneManager.connections:
 			connection.draw()
 
-		if self.mode == AppMode.CREATE_RECT:
+		if self.__mode == AppMode.CREATE_RECT:
 			SceneManager.previewRect.draw()
 
-	def rerender(self):
-		self.empty_screen()
-		self.draw_all()
+	def __rerender(self):
+		self.__empty_screen()
+		self.__draw_all()
 
-	def select_rect(self, rect: FilledRect):
+	def __select_rect(self, rect: FilledRect):
 		SceneManager.selectedRect = rect
 		rect.is_selected = True
 
-	def remove_selection(self):
+	def __remove_selection(self):
 		if SceneManager.selectedRect is None:
 			return
 
@@ -75,57 +75,54 @@ class DrawField(QLabel):
 	def mousePressEvent(self, event: QMouseEvent):
 		for rect in SceneManager.rects:
 			if not is_point_in_rect(rect, event.pos()):
-				if self.mode != AppMode.TOGGLE_CONNECTION:
-					self.mode = AppMode.CREATE_RECT
-
 				continue
 
-			if self.mode == AppMode.TOGGLE_CONNECTION:
+			if self.__mode == AppMode.TOGGLE_CONNECTION:
 				if rect is SceneManager.selectedRect:
-					self.remove_selection()
+					self.__remove_selection()
 				elif SceneManager.selectedRect is None:
-					self.select_rect(rect)
+					self.__select_rect(rect)
 				else:
 					SceneManager.selectedRect.toggle_connection(rect)
 			else:
-				self.mode = AppMode.MOVE_RECT
-				self.remove_selection()
-				self.select_rect(rect)
+				self.__mode = AppMode.MOVE_RECT
+				self.__remove_selection()
+				self.__select_rect(rect)
 
-				self.diff.setX(event.pos().x() - rect.pos.x())
-				self.diff.setY(event.pos().y() - rect.pos.y())
+				self.__diff.setX(event.pos().x() - rect.pos.x())
+				self.__diff.setY(event.pos().y() - rect.pos.y())
 
 			break
 
-		self.rerender()
+		self.__rerender()
 
 	def mouseReleaseEvent(self, event: QMouseEvent):
-		if self.mode == AppMode.TOGGLE_CONNECTION:
-			self.rerender()
+		if self.__mode == AppMode.TOGGLE_CONNECTION:
+			self.__rerender()
 			return
 
-		self.mode = AppMode.CREATE_RECT
+		self.__mode = AppMode.CREATE_RECT
 
-		self.remove_selection()
+		self.__remove_selection()
 
-		self.diff.setX(0)
-		self.diff.setY(0)
+		self.__diff.setX(0)
+		self.__diff.setY(0)
 
 		SceneManager.previewRect.move(get_coords_for_rect_center(event.pos()))
 
-		self.rerender()
+		self.__rerender()
 
 	def mouseMoveEvent(self, event: QMouseEvent):
-		self.parent_window.update_coords_labels(event.pos())
+		self.__parent_window.update_coords_labels(event.pos())
 
 		SceneManager.previewRect.move(get_coords_for_rect_center(event.pos()))
 
 		if SceneManager.selectedRect is None:
-			self.rerender()
+			self.__rerender()
 			return
 
-		if self.mode == AppMode.TOGGLE_CONNECTION:
-			self.rerender()
+		if self.__mode == AppMode.TOGGLE_CONNECTION:
+			self.__rerender()
 			return
 
 		old_pos = QPoint(
@@ -135,8 +132,8 @@ class DrawField(QLabel):
 
 		SceneManager.selectedRect.move(
 			QPoint(
-				event.pos().x() - self.diff.x(),
-				event.pos().y() - self.diff.y()
+				event.pos().x() - self.__diff.x(),
+				event.pos().y() - self.__diff.y()
 			)
 		)
 
@@ -146,12 +143,12 @@ class DrawField(QLabel):
 		):
 			SceneManager.selectedRect.move(old_pos)
 
-		self.rerender()
+		self.__rerender()
 
 	def mouseDoubleClickEvent(self, event: QMouseEvent):
 		if (
 			not SceneManager.canCreateNewRect or
-			self.mode != AppMode.CREATE_RECT
+			self.__mode != AppMode.CREATE_RECT
 		):
 			return
 
@@ -160,22 +157,23 @@ class DrawField(QLabel):
 			get_coords_for_rect_center(event.pos())
 		)
 
-		self.rerender()
+		self.__rerender()
 
 	def keyPressEvent(self, event: QKeyEvent):
 		if event.key() != Qt.Key.Key_Control:
 			return
 
-		if self.mode != AppMode.MOVE_RECT:
-			self.mode = AppMode.TOGGLE_CONNECTION
+		if self.__mode != AppMode.MOVE_RECT:
+			self.__mode = AppMode.TOGGLE_CONNECTION
 
-		self.rerender()
+		self.__rerender()
 
 	def keyReleaseEvent(self, event: QKeyEvent):
 		if event.key() != Qt.Key.Key_Control:
 			return
 
-		if self.mode == AppMode.TOGGLE_CONNECTION:
-			self.mode = AppMode.CREATE_RECT
+		if self.__mode == AppMode.TOGGLE_CONNECTION:
+			self.__mode = AppMode.CREATE_RECT
+			self.__remove_selection()
 
-		self.rerender()
+		self.__rerender()
