@@ -10,8 +10,15 @@ def get_random_color() -> QColor:
 
 
 def get_text_color(background_color: QColor) -> QColor:
-	a = 1 - (0.299 * background_color.redF() + 0.587 * background_color.greenF() + 0.114 * background_color.blueF())
+	# https://stackoverflow.com/a/1855903/13349770
+	# https://www.w3.org/TR/AERT/#color-contrast
 
-	is_dark_color = (background_color.alphaF() > 0) and (a >= 0.3)
+	luminance = (
+					0.299 * background_color.red() +
+					0.587 * background_color.green() +
+					0.114 * background_color.blue()
+				) / 255
 
-	return QColor('white') if is_dark_color else QColor('black')
+	is_dark_color = luminance > 0.5
+
+	return QColor('black') if is_dark_color else QColor('white')
