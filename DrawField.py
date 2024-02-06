@@ -38,6 +38,7 @@ class DrawField(QLabel):
 		self.setMouseTracking(True)
 
 		self.__diff = QPoint(0, 0)
+		self.__selected_rect: FilledRect | None = None
 
 		self.__mode: AppMode = AppMode.CREATE_RECT
 
@@ -63,29 +64,29 @@ class DrawField(QLabel):
 		self.__draw_all()
 
 	def __select_rect(self, rect: FilledRect):
-		SceneManager.selectedRect = rect
+		self.__selected_rect = rect
 		rect.is_selected = True
 
 	def __remove_selection(self):
-		if SceneManager.selectedRect is None:
+		if self.__selected_rect is None:
 			return
 
-		SceneManager.selectedRect.is_selected = False
-		SceneManager.selectedRect = None
+		self.__selected_rect.is_selected = False
+		self.__selected_rect = None
 
 	def __move_selected_rect(self, new_pos: QPoint):
 		old_pos = QPoint(
-			SceneManager.selectedRect.pos.x(),
-			SceneManager.selectedRect.pos.y()
+			self.__selected_rect.pos.x(),
+			self.__selected_rect.pos.y()
 		)
 
-		SceneManager.selectedRect.move(new_pos)
+		self.__selected_rect.move(new_pos)
 
 		if (
-			is_rect_colliding_with_rects(SceneManager.selectedRect, SceneManager.rects, 1) or
-			not is_rect_in_screen(SceneManager.selectedRect, self.size(), 0)
+			is_rect_colliding_with_rects(self.__selected_rect, SceneManager.rects, 1) or
+			not is_rect_in_screen(self.__selected_rect, self.size(), 0)
 		):
-			SceneManager.selectedRect.move(old_pos)
+			self.__selected_rect.move(old_pos)
 
 	def mousePressEvent(self, event: QMouseEvent):
 		for rect in SceneManager.rects:
@@ -93,12 +94,12 @@ class DrawField(QLabel):
 				continue
 
 			if self.__mode == AppMode.TOGGLE_CONNECTION:
-				if rect is SceneManager.selectedRect:
+				if rect is self.__selected_rect:
 					self.__remove_selection()
-				elif SceneManager.selectedRect is None:
+				elif self.__selected_rect is None:
 					self.__select_rect(rect)
 				else:
-					SceneManager.selectedRect.toggle_connection(rect)
+					self.__selected_rect.toggle_connection(rect)
 			else:
 				self.__mode = AppMode.MOVE_RECT
 				self.__remove_selection()
@@ -130,7 +131,7 @@ class DrawField(QLabel):
 	def mouseMoveEvent(self, event: QMouseEvent):
 		SceneManager.previewRect.move(get_coords_for_rect_center(event.pos()))
 
-		if SceneManager.selectedRect is None:
+		if self.__selected_rect is None:
 			self.__rerender()
 			return
 
@@ -142,14 +143,14 @@ class DrawField(QLabel):
 		self.__move_selected_rect(
 			QPoint(
 				event.pos().x() - self.__diff.x(),
-				SceneManager.selectedRect.pos.y()
+				self.__selected_rect.pos.y()
 			)
 		)
 
 		# Move by Oy if possible
 		self.__move_selected_rect(
 			QPoint(
-				SceneManager.selectedRect.pos.x(),
+				self.__selected_rect.pos.x(),
 				event.pos().y() - self.__diff.y()
 			)
 		)

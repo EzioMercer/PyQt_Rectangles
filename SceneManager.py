@@ -12,5 +12,4 @@ class SceneManager:
 	previewRect: PreviewRect = None
 	rects: List[FilledRect] = []
 	canCreateNewRect = False
-	selectedRect: FilledRect = None
 	connections: Set[Connection] = set()
