@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-	from main import Window
+	pass
 
 from enum import Enum
 
@@ -73,6 +73,20 @@ class DrawField(QLabel):
 		SceneManager.selectedRect.is_selected = False
 		SceneManager.selectedRect = None
 
+	def __move_selected_rect(self, new_pos: QPoint):
+		old_pos = QPoint(
+			SceneManager.selectedRect.pos.x(),
+			SceneManager.selectedRect.pos.y()
+		)
+
+		SceneManager.selectedRect.move(new_pos)
+
+		if (
+			is_rect_colliding_with_rects(SceneManager.selectedRect, SceneManager.rects, 1) or
+			not is_rect_in_screen(SceneManager.selectedRect, self.size(), 0)
+		):
+			SceneManager.selectedRect.move(old_pos)
+
 	def mousePressEvent(self, event: QMouseEvent):
 		for rect in SceneManager.rects:
 			if not is_point_in_rect(rect, event.pos()):
@@ -124,23 +138,21 @@ class DrawField(QLabel):
 			self.__rerender()
 			return
 
-		old_pos = QPoint(
-			SceneManager.selectedRect.pos.x(),
-			SceneManager.selectedRect.pos.y()
-		)
-
-		SceneManager.selectedRect.move(
+		# Move by Ox if possible
+		self.__move_selected_rect(
 			QPoint(
 				event.pos().x() - self.__diff.x(),
-				event.pos().y() - self.__diff.y()
+				SceneManager.selectedRect.pos.y()
 			)
 		)
 
-		if (
-			is_rect_colliding_with_rects(SceneManager.selectedRect, SceneManager.rects, 1) or
-			is_rect_in_screen(SceneManager.selectedRect, self.size(), 0)
-		):
-			SceneManager.selectedRect.move(old_pos)
+		# Move by Oy if possible
+		self.__move_selected_rect(
+			QPoint(
+				SceneManager.selectedRect.pos.x(),
+				event.pos().y() - self.__diff.y()
+			)
+		)
 
 		self.__rerender()
 

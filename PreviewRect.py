@@ -19,7 +19,7 @@ class PreviewRect(RectShape):
 
 	def __has_collision(self) -> bool:
 		return (
-			is_rect_in_screen(self, self.__screen_size, 0) or
+			not is_rect_in_screen(self, self.__screen_size, 0) or
 			is_rect_colliding_with_rects(self, SceneManager.rects)
 		)
 

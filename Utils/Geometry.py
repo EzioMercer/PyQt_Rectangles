@@ -28,10 +28,10 @@ def is_point_in_rect(rect: RectShape, point: QPoint) -> bool:
 
 def is_rect_in_screen(rect: RectShape, screen_size: QSize, offset: int = 0) -> bool:
 	return (
-		(rect.pos.x() - offset) < 0 or
-		(rect.pos.x() + RectShape.width + offset) > screen_size.width() or
-		(rect.pos.y() - offset) < 0 or
-		(rect.pos.y() + RectShape.height + offset) > screen_size.height()
+		(rect.pos.x() - offset) > 0 and
+		(rect.pos.x() + RectShape.width + offset) < screen_size.width() and
+		(rect.pos.y() - offset) > 0 and
+		(rect.pos.y() + RectShape.height + offset) < screen_size.height()
 	)
 
 
