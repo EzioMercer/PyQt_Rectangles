@@ -11,7 +11,7 @@ class PreviewRect(RectShape):
 	def __init__(self, draw_field: QLabel, pos: QPoint, screen_size: QSize):
 		super().__init__(draw_field, pos)
 
-		self.screen_size = screen_size
+		self.__screen_size = screen_size
 
 		SceneManager.previewRect = self
 
@@ -19,7 +19,7 @@ class PreviewRect(RectShape):
 
 	def __has_collision(self) -> bool:
 		return (
-			is_rect_in_screen(self, self.screen_size, 0) or
+			is_rect_in_screen(self, self.__screen_size, 0) or
 			is_rect_colliding_with_rects(self, SceneManager.rects)
 		)
 

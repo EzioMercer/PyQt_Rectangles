@@ -10,11 +10,19 @@ class RectShape(ABC):
 	width: int = height * 2
 
 	def __init__(self, draw_field: QLabel, pos: QPoint):
-		self.draw_field = draw_field
-		self.pos = pos
+		self.__draw_field = draw_field
+		self.__pos = pos
+
+	@property
+	def draw_field(self):
+		return self.__draw_field
+
+	@property
+	def pos(self):
+		return self.__pos
 
 	def move(self, new_pos: QPoint):
-		self.pos = new_pos
+		self.__pos = new_pos
 
 	@abstractmethod
 	def prepare_fill(self, painter: QPainter):

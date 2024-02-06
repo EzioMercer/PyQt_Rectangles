@@ -26,13 +26,25 @@ class FilledRect(RectShape):
 		self.__id = FilledRect.id
 		FilledRect.id += 1
 
-		self.is_selected = False
-		self.connections: Dict[FilledRect, Connection] = {}
+		self.__is_selected = False
+		self.__connections: Dict[FilledRect, Connection] = {}
 
 		self.__bg_color = get_random_color()
 		self.__text_color = get_text_color(self.__bg_color)
 
 		self.draw()
+
+	@property
+	def is_selected(self):
+		return self.__is_selected
+
+	@is_selected.setter
+	def is_selected(self, new_value: bool):
+		self.__is_selected = new_value
+
+	@property
+	def connections(self):
+		return self.__connections
 
 	def __connect(self, rect: FilledRect):
 		connection = Connection(self.draw_field, self, rect)

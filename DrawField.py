@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 from enum import Enum
 
-from PyQt6.QtGui import QMouseEvent, QPixmap, QKeyEvent
+from PyQt6.QtGui import QMouseEvent, QPixmap, QKeyEvent, QColor
 from PyQt6.QtWidgets import QLabel
 from PyQt6.QtCore import QPoint, Qt
 
@@ -25,15 +25,16 @@ class AppMode(Enum):
 
 
 class DrawField(QLabel):
-	def __init__(self, parent_window: Window, canvas: QPixmap):
+	def __init__(self, canvas_width: int, canvas_height: int):
 		super().__init__()
 
-		self.__parent_window = parent_window
-		self.setFixedWidth(canvas.width())
-		self.setFixedHeight(canvas.height())
+		self.__canvas = QPixmap(canvas_width, canvas_height)
+		self.__canvas.fill(QColor('black'))
 
-		self.__canvas = canvas
-		self.setPixmap(canvas)
+		self.setFixedWidth(self.__canvas.width())
+		self.setFixedHeight(self.__canvas.height())
+
+		self.setPixmap(self.__canvas)
 		self.setMouseTracking(True)
 
 		self.__diff = QPoint(0, 0)
@@ -113,8 +114,6 @@ class DrawField(QLabel):
 		self.__rerender()
 
 	def mouseMoveEvent(self, event: QMouseEvent):
-		self.__parent_window.update_coords_labels(event.pos())
-
 		SceneManager.previewRect.move(get_coords_for_rect_center(event.pos()))
 
 		if SceneManager.selectedRect is None:
