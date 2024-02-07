@@ -1,6 +1,7 @@
 import os
 from sys import argv, exit
 
+from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QKeyEvent
 from PyQt6.QtWidgets import (
 	QWidget,
@@ -9,6 +10,7 @@ from PyQt6.QtWidgets import (
 )
 
 from DrawField import DrawField
+from SceneManager import SceneManager
 
 
 class Window(QWidget):
@@ -16,14 +18,14 @@ class Window(QWidget):
 		super().__init__()
 		padding = 0
 
-		self.setFixedWidth(canvas_width)
-		self.setFixedHeight(canvas_height)
+		SceneManager.scene_size = QSize(canvas_width, canvas_height)
+		self.setFixedSize(canvas_width, canvas_height)
 		self.setWindowTitle('Rectangles')
 
 		grid_layout = QGridLayout()
 		grid_layout.setContentsMargins(padding, padding, padding, padding)
 
-		self.__drawField = DrawField(canvas_width, canvas_height)
+		self.__drawField = DrawField()
 
 		grid_layout.addWidget(self.__drawField)
 

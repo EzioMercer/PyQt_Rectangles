@@ -19,6 +19,6 @@ def get_text_color(background_color: QColor) -> QColor:
 					0.114 * background_color.blue()
 				) / 255
 
-	is_dark_color = luminance > 0.5
+	need_dark_color = luminance > 0.5
 
-	return QColor('black') if is_dark_color else QColor('white')
+	return QColor('black') if need_dark_color else QColor('white')

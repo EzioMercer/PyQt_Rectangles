@@ -10,21 +10,22 @@ from Connection import Connection
 from RectShape import RectShape
 from SceneManager import SceneManager
 from Utils.Color import get_text_color, get_random_color
-from Utils.Geometry import get_rect_center_coords
+from Utils.Geometry import is_rect_colliding_with_rects, is_rect_in_screen
+from Utils.Math import sign
 
 
 class FilledRect(RectShape):
 	height: int = 128
 	width: int = height * 2
-	id: int = 0
+	next_id: int = 0
 
 	def __init__(self, draw_field: QLabel, pos: QPoint):
 		super().__init__(draw_field, pos)
 
 		SceneManager.rects.append(self)
 
-		self.__id = FilledRect.id
-		FilledRect.id += 1
+		self.__id = FilledRect.next_id
+		FilledRect.next_id += 1
 
 		self.__is_selected = False
 		self.__connections: Dict[FilledRect, Connection] = {}
@@ -33,6 +34,10 @@ class FilledRect(RectShape):
 		self.__text_color = get_text_color(self.__bg_color)
 
 		self.draw()
+
+	@property
+	def id(self):
+		return self.__id
 
 	@property
 	def is_selected(self):
@@ -46,8 +51,60 @@ class FilledRect(RectShape):
 	def connections(self):
 		return self.__connections
 
+	def __move_by_ox_until_available(self, target_x: int):
+		old_pos = self.pos
+		direction = sign(target_x - old_pos.x())
+
+		while (
+			is_rect_in_screen(self) and
+			not is_rect_colliding_with_rects(self, SceneManager.rects, 1) and
+			self.pos.x() != target_x and
+			direction != 0
+		):
+			old_pos = self.pos
+
+			self.pos = QPoint(
+				self.pos.x() + direction,
+				self.pos.y()
+			)
+
+		self.pos = old_pos
+
+	def __move_by_oy_until_available(self, target_y: int):
+		old_pos = self.pos
+		direction = sign(target_y - old_pos.y())
+
+		while (
+			is_rect_in_screen(self) and
+			not is_rect_colliding_with_rects(self, SceneManager.rects, 1) and
+			self.pos.y() != target_y and
+			direction != 0
+		):
+			old_pos = self.pos
+
+			self.pos = QPoint(
+				self.pos.x(),
+				self.pos.y() + direction
+			)
+
+		self.pos = old_pos
+
+	def move(self, new_pos: QPoint):
+		"""
+		The movement by Ox and Oy should work separately
+
+		If you try to move by Ox an Oy simultaneously you will completely get stuck
+		if it get stuck by one of Ox or Oy
+		"""
+		self.__move_by_ox_until_available(new_pos.x())
+		self.__move_by_oy_until_available(new_pos.y())
+
 	def __connect(self, rect: FilledRect):
-		connection = Connection(self.draw_field, self, rect)
+		connection = Connection(
+			self.draw_field,
+			self,
+			rect
+		)
 
 		self.connections[rect] = connection
 		rect.connections[self] = connection
@@ -85,7 +142,7 @@ class FilledRect(RectShape):
 		painter.setPen(pen)
 
 	def draw_text(self, painter: QPainter):
-		text_pos = QPoint(get_rect_center_coords(self.pos))
+		text_pos = QPoint(self.center_coords)
 
 		painter.setPen(self.__text_color)
 		painter.drawText(text_pos, str(self.__id))

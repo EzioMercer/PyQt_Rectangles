@@ -3,7 +3,6 @@ from PyQt6.QtWidgets import QLabel
 
 from RectShape import RectShape
 from SceneManager import SceneManager
-from Utils.Geometry import get_rect_center_coords
 
 
 class Connection:
@@ -25,8 +24,8 @@ class Connection:
 		painter.setPen(pen)
 
 		painter.drawLine(
-			get_rect_center_coords(self.__rect1.pos),
-			get_rect_center_coords(self.__rect2.pos)
+			self.__rect1.center_coords,
+			self.__rect2.center_coords
 		)
 
 		painter.end()

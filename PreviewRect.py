@@ -17,9 +17,15 @@ class PreviewRect(RectShape):
 
 		self.draw()
 
+	def move(self, new_pos: QPoint):
+		self.pos = QPoint(
+			new_pos.x() - RectShape.width // 2,
+			new_pos.y() - RectShape.height // 2
+		)
+
 	def __has_collision(self) -> bool:
 		return (
-			not is_rect_in_screen(self, self.__screen_size, 0) or
+			not is_rect_in_screen(self, 0) or
 			is_rect_colliding_with_rects(self, SceneManager.rects)
 		)
 

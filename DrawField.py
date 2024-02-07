@@ -1,21 +1,16 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-	pass
-
 from enum import Enum
 
+from PyQt6.QtCore import QPoint, Qt
 from PyQt6.QtGui import QMouseEvent, QPixmap, QKeyEvent, QColor
 from PyQt6.QtWidgets import QLabel
-from PyQt6.QtCore import QPoint, Qt
 
-from Utils.Geometry import is_point_in_rect, is_rect_colliding_with_rects, get_coords_for_rect_center, is_rect_in_screen
-from RectShape import RectShape
-from PreviewRect import PreviewRect
 from FilledRect import FilledRect
+from PreviewRect import PreviewRect
+from RectShape import RectShape
 from SceneManager import SceneManager
+from Utils.Geometry import is_point_in_rect
 
 
 class AppMode(Enum):
@@ -25,14 +20,13 @@ class AppMode(Enum):
 
 
 class DrawField(QLabel):
-	def __init__(self, canvas_width: int, canvas_height: int):
+	def __init__(self):
 		super().__init__()
 
-		self.__canvas = QPixmap(canvas_width, canvas_height)
+		self.__canvas = QPixmap(SceneManager.scene_size)
 		self.__canvas.fill(QColor('black'))
 
-		self.setFixedWidth(self.__canvas.width())
-		self.setFixedHeight(self.__canvas.height())
+		self.setFixedSize(SceneManager.scene_size)
 
 		self.setPixmap(self.__canvas)
 		self.setMouseTracking(True)
@@ -74,20 +68,6 @@ class DrawField(QLabel):
 		self.__selected_rect.is_selected = False
 		self.__selected_rect = None
 
-	def __move_selected_rect(self, new_pos: QPoint):
-		old_pos = QPoint(
-			self.__selected_rect.pos.x(),
-			self.__selected_rect.pos.y()
-		)
-
-		self.__selected_rect.move(new_pos)
-
-		if (
-			is_rect_colliding_with_rects(self.__selected_rect, SceneManager.rects, 1) or
-			not is_rect_in_screen(self.__selected_rect, self.size(), 0)
-		):
-			self.__selected_rect.move(old_pos)
-
 	def mousePressEvent(self, event: QMouseEvent):
 		for rect in SceneManager.rects:
 			if not is_point_in_rect(rect, event.pos()):
@@ -102,11 +82,11 @@ class DrawField(QLabel):
 					self.__selected_rect.toggle_connection(rect)
 			else:
 				self.__mode = AppMode.MOVE_RECT
+
 				self.__remove_selection()
 				self.__select_rect(rect)
 
-				self.__diff.setX(event.pos().x() - rect.pos.x())
-				self.__diff.setY(event.pos().y() - rect.pos.y())
+				self.__diff = event.pos() - rect.pos
 
 			break
 
@@ -121,15 +101,14 @@ class DrawField(QLabel):
 
 		self.__remove_selection()
 
-		self.__diff.setX(0)
-		self.__diff.setY(0)
+		self.__diff = QPoint(0, 0)
 
-		SceneManager.previewRect.move(get_coords_for_rect_center(event.pos()))
+		SceneManager.previewRect.move(event.pos())
 
 		self.__rerender()
 
 	def mouseMoveEvent(self, event: QMouseEvent):
-		SceneManager.previewRect.move(get_coords_for_rect_center(event.pos()))
+		SceneManager.previewRect.move(event.pos())
 
 		if self.__selected_rect is None:
 			self.__rerender()
@@ -139,21 +118,7 @@ class DrawField(QLabel):
 			self.__rerender()
 			return
 
-		# Move by Ox if possible
-		self.__move_selected_rect(
-			QPoint(
-				event.pos().x() - self.__diff.x(),
-				self.__selected_rect.pos.y()
-			)
-		)
-
-		# Move by Oy if possible
-		self.__move_selected_rect(
-			QPoint(
-				self.__selected_rect.pos.x(),
-				event.pos().y() - self.__diff.y()
-			)
-		)
+		self.__selected_rect.move(event.pos() - self.__diff)
 
 		self.__rerender()
 
@@ -166,7 +131,7 @@ class DrawField(QLabel):
 
 		FilledRect(
 			self,
-			get_coords_for_rect_center(event.pos())
+			event.pos()
 		)
 
 		self.__rerender()
