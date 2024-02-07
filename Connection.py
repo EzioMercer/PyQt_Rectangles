@@ -2,16 +2,16 @@ from PyQt6.QtGui import QPainter, QPen, QColor
 from PyQt6.QtWidgets import QLabel
 
 from RectShape import RectShape
-from SceneManager import SceneManager
+from Scene import Scene
 
 
 class Connection:
-	def __init__(self, draw_field: QLabel, rect1: RectShape, rect2: RectShape):
+	def __init__(self, draw_field: QLabel, scene: Scene, rect1: RectShape, rect2: RectShape):
 		self.__draw_field = draw_field
 		self.__rect1 = rect1
 		self.__rect2 = rect2
 
-		SceneManager.connections.add(self)
+		scene.connections.add(self)
 
 	def draw(self):
 		canvas = self.__draw_field.pixmap()

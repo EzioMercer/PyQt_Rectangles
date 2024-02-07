@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import QLabel
 from FilledRect import FilledRect
 from PreviewRect import PreviewRect
 from RectShape import RectShape
-from SceneManager import SceneManager
+from Scene import Scene
 from Utils.Geometry import is_point_in_rect
 
 
@@ -20,23 +20,22 @@ class AppMode(Enum):
 
 
 class DrawField(QLabel):
-	def __init__(self):
+	def __init__(self, scene: Scene):
 		super().__init__()
 
-		self.__canvas = QPixmap(SceneManager.scene_size)
-		self.__canvas.fill(QColor('black'))
-
-		self.setFixedSize(SceneManager.scene_size)
-
-		self.setPixmap(self.__canvas)
+		self.__scene = scene
+		self.setFixedSize(self.__scene.size)
 		self.setMouseTracking(True)
 
-		self.__diff = QPoint(0, 0)
-		self.__selected_rect: FilledRect | None = None
+		self.__canvas = QPixmap(self.__scene.size)
+		self.__canvas.fill(QColor('black'))
 
+		self.setPixmap(self.__canvas)
+
+		self.__diff = QPoint(0, 0)
 		self.__mode: AppMode = AppMode.CREATE_RECT
 
-		PreviewRect(self, QPoint(-RectShape.width, -RectShape.height), self.size())
+		PreviewRect(self, scene, QPoint(-RectShape.size().width(), -RectShape.size().height()))
 
 		self.__draw_all()
 
@@ -44,42 +43,42 @@ class DrawField(QLabel):
 		self.setPixmap(self.__canvas)
 
 	def __draw_all(self):
-		for rect in SceneManager.rects:
+		for rect in self.__scene.rects:
 			rect.draw()
 
-		for connection in SceneManager.connections:
+		for connection in self.__scene.connections:
 			connection.draw()
 
 		if self.__mode == AppMode.CREATE_RECT:
-			SceneManager.previewRect.draw()
+			self.__scene.preview_rect.draw()
 
 	def __rerender(self):
 		self.__empty_screen()
 		self.__draw_all()
 
 	def __select_rect(self, rect: FilledRect):
-		self.__selected_rect = rect
+		self.__scene.selected_rect = rect
 		rect.is_selected = True
 
 	def __remove_selection(self):
-		if self.__selected_rect is None:
+		if self.__scene.selected_rect is None:
 			return
 
-		self.__selected_rect.is_selected = False
-		self.__selected_rect = None
+		self.__scene.selected_rect.is_selected = False
+		self.__scene.selected_rect = None
 
 	def mousePressEvent(self, event: QMouseEvent):
-		for rect in SceneManager.rects:
+		for rect in self.__scene.rects:
 			if not is_point_in_rect(rect, event.pos()):
 				continue
 
 			if self.__mode == AppMode.TOGGLE_CONNECTION:
-				if rect is self.__selected_rect:
+				if rect is self.__scene.selected_rect:
 					self.__remove_selection()
-				elif self.__selected_rect is None:
+				elif self.__scene.selected_rect is None:
 					self.__select_rect(rect)
 				else:
-					self.__selected_rect.toggle_connection(rect)
+					self.__scene.selected_rect.toggle_connection(rect)
 			else:
 				self.__mode = AppMode.MOVE_RECT
 
@@ -103,14 +102,14 @@ class DrawField(QLabel):
 
 		self.__diff = QPoint(0, 0)
 
-		SceneManager.previewRect.move(event.pos())
+		self.__scene.preview_rect.move(event.pos())
 
 		self.__rerender()
 
 	def mouseMoveEvent(self, event: QMouseEvent):
-		SceneManager.previewRect.move(event.pos())
+		self.__scene.preview_rect.move(event.pos())
 
-		if self.__selected_rect is None:
+		if self.__scene.selected_rect is None:
 			self.__rerender()
 			return
 
@@ -118,19 +117,20 @@ class DrawField(QLabel):
 			self.__rerender()
 			return
 
-		self.__selected_rect.move(event.pos() - self.__diff)
+		self.__scene.selected_rect.move(event.pos() - self.__diff)
 
 		self.__rerender()
 
 	def mouseDoubleClickEvent(self, event: QMouseEvent):
 		if (
-			not SceneManager.canCreateNewRect or
+			not self.__scene.can_create_new_rect or
 			self.__mode != AppMode.CREATE_RECT
 		):
 			return
 
 		FilledRect(
 			self,
+			self.__scene,
 			event.pos()
 		)
 

@@ -1,20 +1,24 @@
 from abc import ABC, abstractmethod
 
-from PyQt6.QtCore import QPoint
+from PyQt6.QtCore import QPoint, QSize
 from PyQt6.QtGui import QPainter
 from PyQt6.QtWidgets import QLabel
 
 
 class RectShape(ABC):
-	height: int = 100
-	width: int = height * 2
+	__height: int = 100
+	__width: int = __height * 2
 
 	def __init__(self, draw_field: QLabel, center_pos: QPoint):
 		self.__draw_field = draw_field
 		self.pos = QPoint(
-			center_pos.x() - RectShape.width // 2,
-			center_pos.y() - RectShape.height // 2
+			center_pos.x() - RectShape.size().width() // 2,
+			center_pos.y() - RectShape.size().height() // 2
 		)
+		
+	@staticmethod
+	def size() -> QSize:
+		return QSize(RectShape.__width, RectShape.__height)
 
 	@property
 	def draw_field(self) -> QLabel:
@@ -23,8 +27,8 @@ class RectShape(ABC):
 	@property
 	def center_coords(self) -> QPoint:
 		return QPoint(
-			self.pos.x() + RectShape.width // 2,
-			self.pos.y() + RectShape.height // 2
+			self.pos.x() + RectShape.size().width() // 2,
+			self.pos.y() + RectShape.size().height() // 2
 		)
 
 	@abstractmethod
@@ -47,8 +51,8 @@ class RectShape(ABC):
 		painter.drawRect(
 			self.pos.x(),
 			self.pos.y(),
-			RectShape.width,
-			RectShape.height
+			RectShape.size().width(),
+			RectShape.size().height()
 		)
 
 		self.draw_text(painter)
