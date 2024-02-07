@@ -17,6 +17,8 @@ class Scene:
 		self.__preview_rect: PreviewRect | None = None
 		self.__rects: List[FilledRect] = []
 		self.__can_create_new_rect = False
+
+		# Used Set instead of List to effectively remove an item
 		self.__connections: Set[Connection] = set()
 
 	@property

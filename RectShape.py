@@ -11,11 +11,13 @@ class RectShape(ABC):
 
 	def __init__(self, draw_field: QLabel, center_pos: QPoint):
 		self.__draw_field = draw_field
+
+		# The center of Rectangle must be under the pointer when created
 		self.pos = QPoint(
 			center_pos.x() - RectShape.size().width() // 2,
 			center_pos.y() - RectShape.size().height() // 2
 		)
-		
+
 	@staticmethod
 	def size() -> QSize:
 		return QSize(RectShape.__width, RectShape.__height)

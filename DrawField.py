@@ -8,7 +8,6 @@ from PyQt6.QtWidgets import QLabel
 
 from FilledRect import FilledRect
 from PreviewRect import PreviewRect
-from RectShape import RectShape
 from Scene import Scene
 from Utils.Geometry import is_point_in_rect
 
@@ -35,7 +34,8 @@ class DrawField(QLabel):
 		self.__diff = QPoint(0, 0)
 		self.__mode: AppMode = AppMode.CREATE_RECT
 
-		PreviewRect(self, scene, QPoint(-RectShape.size().width(), -RectShape.size().height()))
+		# Move the preview rectangle to outside of scene
+		PreviewRect(self, scene, QPoint(-self.__scene.size.width(), -self.__scene.size.height()))
 
 		self.__draw_all()
 

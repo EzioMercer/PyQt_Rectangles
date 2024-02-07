@@ -10,6 +10,7 @@ def get_random_color() -> QColor:
 
 
 def get_text_color(background_color: QColor) -> QColor:
+	# Please see links below to understand the formula
 	# https://stackoverflow.com/a/1855903/13349770
 	# https://www.w3.org/TR/AERT/#color-contrast
 

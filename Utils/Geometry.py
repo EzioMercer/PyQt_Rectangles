@@ -3,7 +3,6 @@ from typing import List
 from PyQt6.QtCore import QPoint, QSize
 
 from RectShape import RectShape
-from Scene import Scene
 
 
 def is_point_in_rect(rect: RectShape, point: QPoint) -> bool:
@@ -14,8 +13,8 @@ def is_point_in_rect(rect: RectShape, point: QPoint) -> bool:
 
 
 def is_rect_in_screen(rect: RectShape, scene_size: QSize, offset: int = 0) -> bool:
-
 	# check if any corner dots of rect inside the screen
+
 	return (
 		(rect.pos.x() - offset) > 0 and
 		(rect.pos.x() + RectShape.size().width() + offset) < scene_size.width() and
@@ -25,10 +24,11 @@ def is_rect_in_screen(rect: RectShape, scene_size: QSize, offset: int = 0) -> bo
 
 
 def are_two_rects_colliding(rect1: RectShape, rect2: RectShape, offset: int = 0) -> bool:
+	# check if any corner dots of rect1 (which is not rect2) inside rect 2
+
 	if rect1 is rect2:
 		return False
 
-	# check if any corner dots of rect1 inside rect 2
 	return (
 		rect1.pos.x() < (rect2.pos.x() + RectShape.size().width() + offset) and
 		(rect1.pos.x() + RectShape.size().width() + offset) > rect2.pos.x() and

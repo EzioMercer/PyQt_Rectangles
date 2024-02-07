@@ -1,7 +1,6 @@
 import os
 from sys import argv, exit
 
-from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QKeyEvent
 from PyQt6.QtWidgets import (
 	QWidget,

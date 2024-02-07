@@ -27,6 +27,8 @@ class FilledRect(RectShape):
 		FilledRect.__next_id += 1
 
 		self.__is_selected = False
+
+		# Used Dict instead of List to effectively delete/find item
 		self.__connections: Dict[FilledRect, Connection] = {}
 
 		self.__bg_color = get_random_color()
@@ -52,9 +54,11 @@ class FilledRect(RectShape):
 
 	def __move_by(self, target: int, axis: Literal['x', 'y']):
 		direction = sign(target - getattr(self.pos, axis)())
-		vector = QPoint(1, 0) if axis == 'x' else QPoint(0, 1)
-		step = vector * direction
+		# choose the base vector of corresponding axis
+		axis_vector = QPoint(1, 0) if axis == 'x' else QPoint(0, 1)
+		step = axis_vector * direction
 
+		# update position until reach the target or collision
 		while (
 			is_rect_in_screen(self, self.__scene.size) and
 			not is_rect_colliding_with_rects(self, self.__scene.rects, 1) and
@@ -64,15 +68,15 @@ class FilledRect(RectShape):
 
 			self.pos += step
 
+		# should return 1 step back to not stuck on collision
 		self.pos -= step
 
 	def move(self, new_pos: QPoint):
-		"""
-		The movement by Ox and Oy should work separately
+		# The movement by Ox and Oy should work separately
+		#
+		# If you try to move by Ox an Oy simultaneously you will completely get stuck
+		# if it get stuck by one of Ox or Oy
 
-		If you try to move by Ox an Oy simultaneously you will completely get stuck
-		if it get stuck by one of Ox or Oy
-		"""
 		self.__move_by(new_pos.x(), 'x')
 		self.__move_by(new_pos.y(), 'y')
 
@@ -84,6 +88,9 @@ class FilledRect(RectShape):
 			rect
 		)
 
+		# We should keep track Connection in both of rectangles
+		# to effectively find need Connection regardless of chosen
+		# rectangle
 		self.connections[rect] = connection
 		rect.connections[self] = connection
 

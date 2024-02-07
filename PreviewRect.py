@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QPoint, QSize
+from PyQt6.QtCore import QPoint
 from PyQt6.QtGui import QPainter, QPen, QColor
 from PyQt6.QtWidgets import QLabel
 
@@ -18,6 +18,7 @@ class PreviewRect(RectShape):
 		self.draw()
 
 	def move(self, new_pos: QPoint):
+		# The center of Preview Rectangle must be under the pointer always
 		self.pos = QPoint(
 			new_pos.x() - RectShape.size().width() // 2,
 			new_pos.y() - RectShape.size().height() // 2
