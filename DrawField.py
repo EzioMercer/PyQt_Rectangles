@@ -4,7 +4,7 @@ from enum import Enum
 
 from PyQt6.QtCore import QPoint, Qt
 from PyQt6.QtGui import QMouseEvent, QPixmap, QKeyEvent, QColor
-from PyQt6.QtWidgets import QLabel
+from PyQt6.QtWidgets import QLabel, QApplication
 
 from FilledRect import FilledRect
 from PreviewRect import PreviewRect
@@ -68,6 +68,9 @@ class DrawField(QLabel):
 		self.__scene.selected_rect = None
 
 	def mousePressEvent(self, event: QMouseEvent):
+		if QApplication.mouseButtons() != Qt.MouseButton.LeftButton:
+			return
+
 		for rect in self.__scene.rects:
 			if not is_point_in_rect(rect, event.pos()):
 				continue
@@ -124,15 +127,12 @@ class DrawField(QLabel):
 	def mouseDoubleClickEvent(self, event: QMouseEvent):
 		if (
 			not self.__scene.can_create_new_rect or
-			self.__mode != AppMode.CREATE_RECT
+			self.__mode != AppMode.CREATE_RECT or
+			QApplication.mouseButtons() != Qt.MouseButton.LeftButton
 		):
 			return
 
-		FilledRect(
-			self,
-			self.__scene,
-			event.pos()
-		)
+		FilledRect(self, self.__scene, event.pos())
 
 		self.__rerender()
 
